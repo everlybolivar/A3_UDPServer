@@ -1,7 +1,7 @@
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,7 +16,7 @@ import static java.util.Arrays.asList;
 
 public class UDPServer {
 
-    //private static final Logger logger = LoggerFactory.getLogger(UDPServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(UDPServer.class);
     final static int ACK = 1;
     private InetAddress address;  			// the address of this receiver socket
 	private int PORT;
@@ -43,9 +43,9 @@ public class UDPServer {
                 buf.flip();
 
                 String payload = new String(packet.getPayload(), UTF_8);
-//                logger.info("Packet: {}", packet);
-//                logger.info("Payload: {}", payload);
-//                logger.info("Router: {}", router);
+               logger.info("Packet: {}", packet);
+               logger.info("Payload: {}", payload);
+               logger.info("Router: {}", router);
 
                 // Send the response to the router not the client.
                 // The peer address of the packet is the address of the client already.

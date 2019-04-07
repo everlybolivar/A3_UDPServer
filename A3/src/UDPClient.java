@@ -1,7 +1,7 @@
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -17,7 +17,7 @@ import static java.nio.channels.SelectionKey.OP_READ;
 
 public class UDPClient {
 
-    //private static final Logger logger = LoggerFactory.getLogger(UDPClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(UDPClient.class);
 
     private static void runClient(SocketAddress routerAddr, InetSocketAddress serverAddr) throws IOException {
         try(DatagramChannel channel = DatagramChannel.open()){
@@ -31,18 +31,18 @@ public class UDPClient {
                     .create();
             channel.send(p.toBuffer(), routerAddr);
 
-//            logger.info("Sending \"{}\" to router at {}", msg, routerAddr);
+           logger.info("Sending \"{}\" to router at {}", msg, routerAddr);
 
             // Try to receive a packet within timeout.
             channel.configureBlocking(false);
             Selector selector = Selector.open();
             channel.register(selector, OP_READ);
-//            logger.info("Waiting for the response");
+           logger.info("Waiting for the response");
             selector.select(5000);
 
             Set<SelectionKey> keys = selector.selectedKeys();
             if(keys.isEmpty()){
-//                logger.error("No response after timeout");
+               logger.error("No response after timeout");
                 return;
             }
 
@@ -51,10 +51,10 @@ public class UDPClient {
             SocketAddress router = channel.receive(buf);
             buf.flip();
             Packet resp = Packet.fromBuffer(buf);
-//            logger.info("Packet: {}", resp);
-//            logger.info("Router: {}", router);
+           logger.info("Packet: {}", resp);
+           logger.info("Router: {}", router);
             String payload = new String(resp.getPayload(), StandardCharsets.UTF_8);
-//            logger.info("Payload: {}",  payload);
+           logger.info("Payload: {}",  payload);
 
             keys.clear();
         }
