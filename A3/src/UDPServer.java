@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -18,17 +17,12 @@ public class UDPServer {
 
     private static final Logger logger = LoggerFactory.getLogger(UDPServer.class);
     final static int ACK = 1;
-    private InetAddress address;  			// the address of this receiver socket
-	private int PORT;
-	private DatagramChannel channel;
-	private SocketAddress router;
-    static int[] window;
 
     private void listenAndServe(int port) throws IOException {
 
         try (DatagramChannel channel = DatagramChannel.open()) {
             channel.bind(new InetSocketAddress(port));
-            //logger.info("EchoServer is listening at {}", channel.getLocalAddress());
+            logger.info("EchoServer is listening at {}", channel.getLocalAddress());
             ByteBuffer buf = ByteBuffer
                     .allocate(Packet.MAX_LEN)
                     .order(ByteOrder.BIG_ENDIAN);
@@ -43,32 +37,32 @@ public class UDPServer {
                 buf.flip();
 
                 String payload = new String(packet.getPayload(), UTF_8);
-               logger.info("Packet: {}", packet);
-               logger.info("Payload: {}", payload);
-               logger.info("Router: {}", router);
+                logger.info("Packet: {}", packet);
+                logger.info("Payload: {}", payload);
+                logger.info("Router: {}", router);
+                
 
                 // Send the response to the router not the client.
                 // The peer address of the packet is the address of the client already.
                 // We can use toBuilder to copy properties of the current packet.
                 // This demonstrate how to create a new packet from an existing packet.
-                Packet resp = packet.toBuilder()
-                        .setPayload(payload.getBytes())
-                        .create();
+                Packet resp = createACK(packet);
                 channel.send(resp.toBuffer(), router);
+                System.out.println("Sending out ACK for packet " + resp.getSequenceNumber() + ("."));
 
             }
         }
     }
    
     
-    // Sends ACKnowledgement of a packet
-	public void sendACK(Packet pckt) throws IOException {
-		byte[] payload = pckt.getPayload(); 
-		long ackSeqNum = pckt.getSequenceNumber();
-		Packet packet = new Packet(ACK, ackSeqNum, this.address, this.PORT, payload);
-		this.channel.send(packet.toBuffer(), router);
-		System.out.println("Sent ACK: { Packet: " + ackSeqNum + " }");
-	}
+    // Creates an ACK of a received packet
+    public Packet createACK(Packet pckt) {
+        Packet ACKpacket = pckt.toBuilder()
+                .setType(ACK)
+                .setSequenceNumber(pckt.getSequenceNumber())
+                .create();
+        return ACKpacket;
+    }
     
 
     public static void main(String[] args) throws IOException {
